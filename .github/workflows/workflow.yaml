@@ -62,10 +62,10 @@ jobs:
             sed -i "s/version=.*-SNAPSHOT$/version=$version/1" gradle.properties
           fi
           ./gradlew clean build -x test
-      - name: Archive plugin-starter jar
+      - name: Archive plugin jar
         uses: actions/upload-artifact@v4
         with:
-          name: plugin-starter
+          name: plugin-bilibili-bangumi
           path: |
             build/libs/*.jar
           retention-days: 1
@@ -75,10 +75,10 @@ jobs:
     needs: build
     if: github.event_name == 'release'
     steps:
-      - name: Download plugin-starter jar
+      - name: Download plugin jar
         uses: actions/download-artifact@v4
         with:
-          name: plugin-starter
+          name: plugin-bilibili-bangumi
           path: build/libs
       - name: Get Name of Artifact
         id: get_artifact
@@ -92,7 +92,6 @@ jobs:
           echo "RELEASE_ID=${{ github.event.release.id }}" >> $GITHUB_ENV
       - name: Upload a Release Asset
         uses: actions/github-script@v7
-        if: github.event_name == 'release'
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -114,3 +113,57 @@ jobs:
               name: artifactName,
               data: await fs.readFile(artifactPathName)
             });
+
+  # Optional: Create draft release for manual triggers
+  create-draft-release:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Download plugin jar
+        uses: actions/download-artifact@v4
+        with:
+          name: plugin-bilibili-bangumi
+          path: build/libs
+      - name: Get Name of Artifact
+        id: get_artifact
+        run: |
+          ARTIFACT_PATHNAME=$(ls build/libs/*.jar | head -n 1)
+          ARTIFACT_NAME=$(basename ${ARTIFACT_PATHNAME})
+          echo "Artifact pathname: ${ARTIFACT_PATHNAME}"
+          echo "Artifact name: ${ARTIFACT_NAME}"
+          echo "ARTIFACT_PATHNAME=${ARTIFACT_PATHNAME}" >> $GITHUB_ENV
+          echo "ARTIFACT_NAME=${ARTIFACT_NAME}" >> $GITHUB_ENV
+      - name: Create Draft Release
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs').promises;
+            const { repo: { owner, repo } } = context;
+            
+            const artifactPathName = process.env.ARTIFACT_PATHNAME;
+            const artifactName = process.env.ARTIFACT_NAME;
+            const version = artifactName.replace('.jar', '').split('-').pop();
+            
+            console.log('Creating draft release for version:', version);
+            
+            // Create draft release
+            const release = await github.repos.createRelease({
+              owner, repo,
+              tag_name: `v${version}`,
+              name: `Plugin Bilibili Bangumi v${version}`,
+              body: `## 更新内容\n\n- 自动构建的插件版本\n- 构建时间: ${new Date().toISOString()}`,
+              draft: true,
+              prerelease: false
+            });
+            
+            // Upload artifact to the draft release
+            await github.repos.uploadReleaseAsset({
+              owner, repo,
+              release_id: release.data.id,
+              name: artifactName,
+              data: await fs.readFile(artifactPathName)
+            });
+            
+            console.log('Draft release created:', release.data.html_url);
