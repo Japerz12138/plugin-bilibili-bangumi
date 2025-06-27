@@ -49,10 +49,12 @@ jobs:
           cd ..
       - name: Build with Gradle
         run: |
-          # Set the version with tag name when releasing
-          version=${{ github.event.release.tag_name }}
-          version=${version#v}
-          sed -i "s/version=.*-SNAPSHOT$/version=$version/1" gradle.properties
+          # Set the version with tag name when releasing, otherwise keep current version
+          if [ "${{ github.event_name }}" = "release" ] && [ -n "${{ github.event.release.tag_name }}" ]; then
+            version=${{ github.event.release.tag_name }}
+            version=${version#v}
+            sed -i "s/version=.*-SNAPSHOT$/version=$version/1" gradle.properties
+          fi
           ./gradlew clean build -x test
       - name: Archive plugin-starter jar
         uses: actions/upload-artifact@v4
