@@ -1,8 +1,8 @@
 plugins {
     id 'java'
     id "com.github.node-gradle.node" version "5.0.0"
-    id "io.freefair.lombok" version "8.0.1"
-    id "run.halo.plugin.devtools" version "0.0.4"
+    id "io.freefair.lombok" version "8.6"
+    id "run.halo.plugin.devtools" version "0.6.1"
 }
 
 group 'top.roozen.bangumi'
@@ -13,10 +13,11 @@ repositories {
     maven { url 'https://s01.oss.sonatype.org/content/repositories/releases' }
     maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
     maven { url 'https://repo.spring.io/milestone' }
+    maven { url 'https://repo.halo.run/releases' }
 }
 
 dependencies {
-    implementation platform('run.halo.tools.platform:plugin:2.20.0')
+    implementation platform('run.halo.tools.platform:plugin:2.21.0')
     compileOnly 'run.halo.app:api'
 
     testImplementation 'run.halo.app:api'

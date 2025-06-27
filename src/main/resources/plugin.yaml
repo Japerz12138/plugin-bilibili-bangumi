@@ -6,7 +6,7 @@ spec:
   enabled: true
   requires: ">=2.20.0"
   author:
-    name: Roozen
+    name: Roozen & Akuma-real & Japerz
     website: https://roozen.top
   logo: logo.png
   settingName: plugin-bilibili-bangumi-settings
