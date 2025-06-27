@@ -20,15 +20,7 @@ export default ({ mode }: { mode: string }) => {
       VueJsx(), 
       Icons({ 
         compiler: "vue3",
-        autoInstall: false,
-        scale: 1.2,
-        defaultStyle: '',
-        defaultClass: '',
-        iconCustomizer(collection, icon, props) {
-          // Customize icon properties
-          props.width = '1em';
-          props.height = '1em';
-        }
+        autoInstall: false
       })
     ],
     resolve: {

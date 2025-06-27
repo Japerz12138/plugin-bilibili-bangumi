@@ -29,7 +29,7 @@ jobs:
         name: Install pnpm
         id: pnpm-install
         with:
-          version: 8.15.0
+          version: 8.10.0
           run_install: false
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -44,16 +44,16 @@ jobs:
             ${{ runner.os }}-pnpm-store-
       - name: Install Frontend Dependencies
         env:
-          NODE_OPTIONS: "--max-old-space-size=4096"
+          NODE_OPTIONS: "--max-old-space-size=4096 --experimental-modules"
+          NODE_ENV: "production"
         run: |
           cd console
-          pnpm store prune
-          pnpm install --frozen-lockfile --prefer-offline
-          pnpm add @iconify/utils@latest
+          pnpm install --frozen-lockfile
           cd ..
       - name: Build with Gradle
         env:
-          NODE_OPTIONS: "--max-old-space-size=4096"
+          NODE_OPTIONS: "--max-old-space-size=4096 --experimental-modules"
+          NODE_ENV: "production"
         run: |
           # Set the version with tag name when releasing, otherwise keep current version
           if [ "${{ github.event_name }}" = "release" ] && [ -n "${{ github.event.release.tag_name }}" ]; then
