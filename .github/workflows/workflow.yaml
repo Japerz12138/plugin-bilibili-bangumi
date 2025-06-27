@@ -118,12 +118,18 @@ jobs:
             const artifactName = process.env.ARTIFACT_NAME
             console.log('Releasing', releaseId, artifactPathName, artifactName)
 
-            await github.repos.uploadReleaseAsset({
-              owner, repo,
-              release_id: releaseId,
-              name: artifactName,
-              data: await fs.readFile(artifactPathName)
-            });
+            try {
+              await github.rest.repos.uploadReleaseAsset({
+                owner, repo,
+                release_id: releaseId,
+                name: artifactName,
+                data: await fs.readFile(artifactPathName)
+              });
+              console.log('Release asset uploaded successfully');
+            } catch (error) {
+              console.error('Error uploading release asset:', error);
+              throw error;
+            }
 
   # Optional: Create draft release for manual triggers
   create-draft-release:
@@ -163,22 +169,27 @@ jobs:
             
             console.log('Creating draft release for version:', version);
             
-            // Create draft release
-            const release = await github.repos.createRelease({
-              owner, repo,
-              tag_name: `v${version}`,
-              name: `Plugin Bilibili Bangumi v${version}`,
-              body: `## 更新内容\n\n- 自动构建的插件版本\n- 构建时间: ${new Date().toISOString()}`,
-              draft: true,
-              prerelease: false
-            });
-            
-            // Upload artifact to the draft release
-            await github.repos.uploadReleaseAsset({
-              owner, repo,
-              release_id: release.data.id,
-              name: artifactName,
-              data: await fs.readFile(artifactPathName)
-            });
-            
-            console.log('Draft release created:', release.data.html_url);
+            try {
+              // Create draft release
+              const release = await github.rest.repos.createRelease({
+                owner, repo,
+                tag_name: `v${version}`,
+                name: `Plugin Bilibili Bangumi v${version}`,
+                body: `## 更新内容\n\n- 自动构建的插件版本\n- 构建时间: ${new Date().toISOString()}`,
+                draft: true,
+                prerelease: false
+              });
+              
+              // Upload artifact to the draft release
+              await github.rest.repos.uploadReleaseAsset({
+                owner, repo,
+                release_id: release.data.id,
+                name: artifactName,
+                data: await fs.readFile(artifactPathName)
+              });
+              
+              console.log('Draft release created:', release.data.html_url);
+            } catch (error) {
+              console.error('Error creating release:', error);
+              throw error;
+            }
