@@ -20,7 +20,15 @@ export default ({ mode }: { mode: string }) => {
       VueJsx(), 
       Icons({ 
         compiler: "vue3",
-        autoInstall: true
+        autoInstall: false,
+        scale: 1.2,
+        defaultStyle: '',
+        defaultClass: '',
+        iconCustomizer(collection, icon, props) {
+          // Customize icon properties
+          props.width = '1em';
+          props.height = '1em';
+        }
       })
     ],
     resolve: {
@@ -30,6 +38,9 @@ export default ({ mode }: { mode: string }) => {
     },
     define: {
       "process.env": process.env,
+    },
+    optimizeDeps: {
+      include: ['@iconify/utils']
     },
     build: {
       outDir,

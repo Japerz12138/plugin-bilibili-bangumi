@@ -24,12 +24,12 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
       - uses: pnpm/action-setup@v2
         name: Install pnpm
         id: pnpm-install
         with:
-          version: 8
+          version: 8.15.0
           run_install: false
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -43,11 +43,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
       - name: Install Frontend Dependencies
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
         run: |
           cd console
-          pnpm install
+          pnpm store prune
+          pnpm install --frozen-lockfile --prefer-offline
+          pnpm add @iconify/utils@latest
           cd ..
       - name: Build with Gradle
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
         run: |
           # Set the version with tag name when releasing, otherwise keep current version
           if [ "${{ github.event_name }}" = "release" ] && [ -n "${{ github.event.release.tag_name }}" ]; then
